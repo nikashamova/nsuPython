@@ -5,11 +5,10 @@ def create_new_line(line, num):
         word_len = len(word)
         if cur_sum + word_len <= num:
             cur_sum += word_len + 1
-        else:
+        elif result != "" and result != "\n":
             cur_sum = 0
             result += "\n"
         result += word + " "
-    result = result[:-1]
     return result
 
 
