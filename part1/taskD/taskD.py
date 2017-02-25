@@ -21,7 +21,10 @@ def correct_bracket_sequence_identifier(line):
             tmp = stack.pop()
             if tmp != "{":
                 return "no"
-    return "yes"
+    if not stack:
+        return "yes"
+    return "no"
+
 
 file_input = open("input.txt", "r")
 file_output = open("output.txt", "w")
