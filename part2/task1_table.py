@@ -1,4 +1,5 @@
 # coding=utf8
+from argparse import ArgumentParser
 
 
 class Table:
@@ -57,24 +58,44 @@ class Table:
             j += 1
 
     def create_new_table_by_column_numbers(self, indexes):
-        res = []
-        for i in indexes:
-            res.append(self.get_column(i))
-        return res
+        new_res = [[self.array[k][j] for j in indexes] for k in range(len(self.array))]
+        return Table(new_res)
 
 
-my_table = Table([
-    [1, 2, 3],
-    [3, 4, 5],
-    [6, 7, 8]])
-other = [
-    [0, 0, 0],
-    [1, 1, 1],
-    [2, 2, 2]]
-# print(my_table.array[1])
+parser = ArgumentParser("HELLO")
+# parser.add_argument('cut')
+
+parser.add_argument('option', nargs=8, help='Выберите, что вы хотите сделать с таблицей')
+
+subparsers = parser.add_subparsers(help="command")
+
+number_parser = subparsers.add_parser('count', help="numbers")
+name_parser = subparsers.add_parser('name', nargs=1, help="file name")
+
+a = parser.parse_args()
+if a.option == "cut":
+    print("hello")
+else:
+    print("not hello")
+
+# my_table = Table([
+#     [1, 2, 3],
+#     [0, 4, 5],
+#     [6, 7, 8]])
+# other = [
+#     [0, 0, 0],
+#     [1, 1, 1],
+#     [2, 2, 2]]
+#
+# print(my_table.head(2))
+# print(my_table.tail(2))
+#
 # print(my_table.get_row(2))
 # print(my_table.get_column(1))
-# my_table.concatenate_by_rows(other)
+#
+# # my_table.concatenate_by_rows(other)
+# my_table.concatenate_by_columns(other)
 # print(my_table.array)
-# print(my_table.create_new_table_by_column_numbers([0, 2]))
-print(my_table.tail(3))
+#
+# new_table = my_table.create_new_table_by_column_numbers([0, 2])
+# print(new_table.array)
