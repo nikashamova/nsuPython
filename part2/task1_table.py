@@ -33,69 +33,201 @@ class Table:
     """
 
     def __init__(self, array):
+        ideal = len(array[0])
+        l = sum([1 for i in array if len(i) != ideal])
+        if l != 0:
+            raise FormatTableError
         self.array = array
 
     def head(self, count):
-        return [self.array[i] for i in range(count)]
+        if count < 0 or count > len(self.array):
+            raise IndexError
+        return Table([self.array[i] for i in range(count)])
 
     def tail(self, count):
-        return [self.array[i] for i in range(len(self.array) - count, len(self.array))]
+        if count < 0 or count > len(self.array):
+            raise IndexError
+        return Table([self.array[i] for i in range(len(self.array) - count, len(self.array))])
 
+    # row
     def get_row(self, index):
+        if 0 > index or index >= len(self.array):
+            raise TableIndexError
         return self.array[index]
 
+    # column
     def get_column(self, index):
+        if 0 > index or index >= len(self.array[0]):
+            raise TableIndexError
         return [self.array[i][index] for i in range(len(self.array))]
 
-    def concatenate_by_rows(self, other_array):
-        self.array = sum([self.array, other_array], [])
+    # concatenate
+    def concatenate_by_rows(self, other):
+        if len(self.array[0]) != len(other.array[0]):
+            raise SizeError
+        self.array = sum([self.array, other.array], [])
 
-    def concatenate_by_columns(self, other_array):
+    # paste
+    def concatenate_by_columns(self, other):
+        if len(self.array) != len(other.array):
+            raise SizeError
         j = 0
         for i in self.array:
-            for k in other_array[j]:
+            for k in other.array[j]:
                 i.append(k)
             j += 1
 
+    # cut
     def create_new_table_by_column_numbers(self, indexes):
+        flag = sum([1 for i in indexes if (0 > i or i >= len(self.array))])
+        if flag != 0:
+            raise TableIndexError
         new_res = [[self.array[k][j] for j in indexes] for k in range(len(self.array))]
         return Table(new_res)
 
 
-parser = ArgumentParser("HELLO")
-# parser.add_argument('cut')
+class SizeError(Exception):
+    pass
 
-parser.add_argument('option', nargs=8, help='Выберите, что вы хотите сделать с таблицей')
 
-subparsers = parser.add_subparsers(help="command")
+class TableIndexError(Exception):
+    pass
 
-number_parser = subparsers.add_parser('count', help="numbers")
-name_parser = subparsers.add_parser('name', nargs=1, help="file name")
 
+class FormatTableError(Exception):
+    pass
+
+
+def config_parser():
+    parser = ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command")
+
+    cut_parser = subparsers.add_parser('cut', help="выбрать определённые столбцы из таблицы")
+    cut_parser.add_argument('-f', type=str)
+    cut_parser.add_argument('name', type=open)
+
+    head_parser = subparsers.add_parser('head', help="выбрать первые n строк из таблицы")
+    head_parser.add_argument('-n', nargs=1, type=int)
+    head_parser.add_argument('name', type=open)
+
+    tail_parser = subparsers.add_parser('tail', help="выбрать последние n строк из таблицы")
+    tail_parser.add_argument('-n', nargs=1, type=int)
+    tail_parser.add_argument('name', type=open)
+
+    paste_parser = subparsers.add_parser('paste', help="склеить две таблицы приписыванием столбцов")
+    paste_parser.add_argument('name1', type=open)
+    paste_parser.add_argument('name2', type=open)
+
+    concatenate_parser = subparsers.add_parser('concatenate', help="склеить две таблицы приписыванием строк")
+    concatenate_parser.add_argument('name1', type=open)
+    concatenate_parser.add_argument('name2', type=open)
+
+    row_parser = subparsers.add_parser('row', help="получить n-ую строку")
+    row_parser.add_argument('name', type=open)
+    row_parser.add_argument('-n', nargs=1, type=int)
+
+    column_parser = subparsers.add_parser('column', help="получить n-ый столбец")
+    column_parser.add_argument('name', type=open)
+    column_parser.add_argument('-n', nargs=1, type=int)
+
+    return parser
+
+
+def run_command(namespace):
+    if namespace.command == "cut":
+        try:
+            txt = namespace.name.read()
+            indexes = [int(x) for x in namespace.f.split(",")]
+            t = Table(convert_str_to_list(txt))
+            print(t.array)
+            res = t.create_new_table_by_column_numbers(indexes)
+            print(res.array)
+        except TableIndexError:
+            print("не существует столбца с данным номером")
+        except FormatTableError:
+            print("неверный формат таблицы")
+    elif namespace.command == "head":
+        try:
+            txt = namespace.name.read()
+            t = Table(convert_str_to_list(txt))
+            print(t.array)
+            res = t.head(namespace.n[0])
+            print(res.array)
+        except IndexError:
+            print("не существует такого количества строк")
+        except FormatTableError:
+            print("неверный формат таблицы")
+    elif namespace.command == "tail":
+        try:
+            txt = namespace.name.read()
+            t = Table(convert_str_to_list(txt))
+            print(t.array)
+            res = t.tail(namespace.n[0])
+            print(res.array)
+        except IndexError:
+            print("не существует такого количества строк")
+        except FormatTableError:
+            print("неверный формат таблицы")
+    elif namespace.command == "paste":
+        try:
+            txt = namespace.name1.read()
+            t1 = Table(convert_str_to_list(txt))
+            print(t1.array)
+
+            txt = namespace.name2.read()
+            t2 = Table(convert_str_to_list(txt))
+            print(t2.array)
+
+            t1.concatenate_by_columns(t2)
+            print(t1.array)
+        except SizeError:
+            print("неправильное количество строк")
+        except FormatTableError:
+            print("неверный формат таблицы")
+    elif namespace.command == "concatenate":
+        try:
+            txt = namespace.name1.read()
+            t1 = Table(convert_str_to_list(txt))
+            print(t1.array)
+
+            txt = namespace.name2.read()
+            t2 = Table(convert_str_to_list(txt))
+            print(t2.array)
+
+            t1.concatenate_by_rows(t2)
+            print(t1.array)
+        except SizeError:
+            print("неправильное количество столбцов")
+        except FormatTableError:
+            print("неверный формат таблицы")
+    elif namespace.command == "column":
+        try:
+            txt = namespace.name.read()
+            t = Table(convert_str_to_list(txt))
+            print(t.array)
+            res = t.get_column(namespace.n[0])
+            print(res)
+        except TableIndexError:
+            print("не существует столбца с данным номером")
+        except FormatTableError:
+            print("неверный формат таблицы")
+    elif namespace.command == "row":
+        try:
+            txt = namespace.name.read()
+            t = Table(convert_str_to_list(txt))
+            print(t.array)
+            res = t.get_row(namespace.n[0])
+            print(res)
+        except TableIndexError:
+            print("не существует строки с данным номером")
+        except FormatTableError:
+            print("неверный формат таблицы")
+
+
+def convert_str_to_list(s):
+    return [[int(y) for y in x.split(',')] for x in s.split('\n')]
+
+
+parser = config_parser()
 a = parser.parse_args()
-if a.option == "cut":
-    print("hello")
-else:
-    print("not hello")
-
-# my_table = Table([
-#     [1, 2, 3],
-#     [0, 4, 5],
-#     [6, 7, 8]])
-# other = [
-#     [0, 0, 0],
-#     [1, 1, 1],
-#     [2, 2, 2]]
-#
-# print(my_table.head(2))
-# print(my_table.tail(2))
-#
-# print(my_table.get_row(2))
-# print(my_table.get_column(1))
-#
-# # my_table.concatenate_by_rows(other)
-# my_table.concatenate_by_columns(other)
-# print(my_table.array)
-#
-# new_table = my_table.create_new_table_by_column_numbers([0, 2])
-# print(new_table.array)
+run_command(a)
