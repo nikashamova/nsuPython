@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 
 
 class Table:
-    """
+    u"""
     Класс таблицы, который хранит данные в виде двумерной таблицы.
 
     ...
@@ -79,7 +79,7 @@ class Table:
 
     # cut
     def create_new_table_by_column_numbers(self, indexes):
-        flag = sum([1 for i in indexes if (0 > i or i >= len(self.array))])
+        flag = sum([1 for i in indexes if (0 > i or i > len(self.array))])
         if flag != 0:
             raise TableIndexError
         new_res = [[self.array[k][j] for j in indexes] for k in range(len(self.array))]
@@ -102,31 +102,31 @@ def config_parser():
     parser = ArgumentParser()
     subparsers = parser.add_subparsers(dest="command")
 
-    cut_parser = subparsers.add_parser('cut', help="выбрать определённые столбцы из таблицы")
+    cut_parser = subparsers.add_parser('cut', help=u"выбрать определённые столбцы из таблицы")
     cut_parser.add_argument('-f', type=str)
     cut_parser.add_argument('name', type=open)
 
-    head_parser = subparsers.add_parser('head', help="выбрать первые n строк из таблицы")
+    head_parser = subparsers.add_parser('head', help=u"выбрать первые n строк из таблицы")
     head_parser.add_argument('-n', nargs=1, type=int)
     head_parser.add_argument('name', type=open)
 
-    tail_parser = subparsers.add_parser('tail', help="выбрать последние n строк из таблицы")
+    tail_parser = subparsers.add_parser('tail', help=u"выбрать последние n строк из таблицы")
     tail_parser.add_argument('-n', nargs=1, type=int)
     tail_parser.add_argument('name', type=open)
 
-    paste_parser = subparsers.add_parser('paste', help="склеить две таблицы приписыванием столбцов")
+    paste_parser = subparsers.add_parser('paste', help=u"склеить две таблицы приписыванием столбцов")
     paste_parser.add_argument('name1', type=open)
     paste_parser.add_argument('name2', type=open)
 
-    concatenate_parser = subparsers.add_parser('concatenate', help="склеить две таблицы приписыванием строк")
+    concatenate_parser = subparsers.add_parser('concatenate', help=u"склеить две таблицы приписыванием строк")
     concatenate_parser.add_argument('name1', type=open)
     concatenate_parser.add_argument('name2', type=open)
 
-    row_parser = subparsers.add_parser('row', help="получить n-ую строку")
+    row_parser = subparsers.add_parser('row', help=u"получить n-ую строку")
     row_parser.add_argument('name', type=open)
     row_parser.add_argument('-n', nargs=1, type=int)
 
-    column_parser = subparsers.add_parser('column', help="получить n-ый столбец")
+    column_parser = subparsers.add_parser('column', help=u"получить n-ый столбец")
     column_parser.add_argument('name', type=open)
     column_parser.add_argument('-n', nargs=1, type=int)
 
@@ -143,9 +143,9 @@ def run_command(namespace):
             res = t.create_new_table_by_column_numbers(indexes)
             print(res.array)
         except TableIndexError:
-            print("не существует столбца с данным номером")
+            print(u"не существует столбца с данным номером")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
     elif namespace.command == "head":
         try:
             txt = namespace.name.read()
@@ -154,9 +154,9 @@ def run_command(namespace):
             res = t.head(namespace.n[0])
             print(res.array)
         except IndexError:
-            print("не существует такого количества строк")
+            print(u"не существует такого количества строк")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
     elif namespace.command == "tail":
         try:
             txt = namespace.name.read()
@@ -165,9 +165,9 @@ def run_command(namespace):
             res = t.tail(namespace.n[0])
             print(res.array)
         except IndexError:
-            print("не существует такого количества строк")
+            print(u"не существует такого количества строк")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
     elif namespace.command == "paste":
         try:
             txt = namespace.name1.read()
@@ -181,9 +181,9 @@ def run_command(namespace):
             t1.concatenate_by_columns(t2)
             print(t1.array)
         except SizeError:
-            print("неправильное количество строк")
+            print(u"неправильное количество строк")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
     elif namespace.command == "concatenate":
         try:
             txt = namespace.name1.read()
@@ -197,9 +197,9 @@ def run_command(namespace):
             t1.concatenate_by_rows(t2)
             print(t1.array)
         except SizeError:
-            print("неправильное количество столбцов")
+            print(u"неправильное количество столбцов")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
     elif namespace.command == "column":
         try:
             txt = namespace.name.read()
@@ -208,9 +208,9 @@ def run_command(namespace):
             res = t.get_column(namespace.n[0])
             print(res)
         except TableIndexError:
-            print("не существует столбца с данным номером")
+            print(u"не существует столбца с данным номером")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
     elif namespace.command == "row":
         try:
             txt = namespace.name.read()
@@ -219,9 +219,9 @@ def run_command(namespace):
             res = t.get_row(namespace.n[0])
             print(res)
         except TableIndexError:
-            print("не существует строки с данным номером")
+            print(u"не существует строки с данным номером")
         except FormatTableError:
-            print("неверный формат таблицы")
+            print(u"неверный формат таблицы")
 
 
 def convert_str_to_list(s):
